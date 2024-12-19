@@ -6,7 +6,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,9 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +39,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buublespirit_assignmnet3.ui.theme.BuubleSpiritAssignmnet3Theme
@@ -137,16 +133,20 @@ class MainActivity : ComponentActivity() {
                                     when(sensorConf.orientation){
                                         Configuration.ORIENTATION_PORTRAIT ->{
                                             calFiveHV(storeList, "%.1f".format(single).toFloat(), 500)
-                                            calFiveHV(storeList, "%.1f".format(circleX).toFloat(), 500)
-                                            calFiveHV(storeList, "%.1f".format(circleY).toFloat(), 500)
+                                            calFiveHV(x, "%.1f".format(circleX).toFloat(), 500)
+                                            calFiveHV(y, "%.1f".format(circleY).toFloat(), 500)
                                         }
                                         Configuration.ORIENTATION_LANDSCAPE->{
                                             calFiveHV(storeList, "%.1f".format(single - 90).toFloat(), 500)
-                                            calFiveHV(storeList, "%.1f".format(circleX).toFloat(), 500)
-                                            calFiveHV(storeList, "%.1f".format(circleY).toFloat(), 500)
+                                            calFiveHV(x, "%.1f".format(circleX).toFloat(), 500)
+                                            calFiveHV(y, "%.1f".format(circleY).toFloat(), 500)
                                         }
                                         else->{}
                                     }
+
+
+
+
 
                                     // Check the Mode for Landscape and portrait
                                     sensorClass = SensorModel(
@@ -154,11 +154,13 @@ class MainActivity : ComponentActivity() {
                                             circleX.toFloat(),
                                             circleY.toFloat()
                                         ),
-                                        protraitX = when (sensorConf.orientation){
+                                        portraitX = when (sensorConf.orientation){
                                             Configuration.ORIENTATION_PORTRAIT -> single.toFloat()
                                             Configuration.ORIENTATION_LANDSCAPE -> (single - 90).toFloat()
-                                            else -> sensorClass.protraitX
-                                        }
+                                            else -> sensorClass.portraitX
+                                        },
+                                        xVal = x.toList(),
+                                        yVal = y.toList()
                                     )
                                 }
                             }
@@ -212,6 +214,7 @@ class MainActivity : ComponentActivity() {
 
         ) {
             Spacer(modifier =  Modifier.padding(top = 10.dp))
+            // Mode Check
             Text(
                 if(sM.landscape) "LandScape Mode" else "Portrait Mode",
                 style = TextStyle(
@@ -221,16 +224,63 @@ class MainActivity : ComponentActivity() {
                 )
             )
 
-            Spacer(modifier =  Modifier.padding(top = 15.dp))
+            Spacer(modifier =  Modifier.padding(top = 12.dp))
 
+            // Current Angle 1D
             Row{
                 Text(
-                   "Current Angle 1D : ${"%.1f".format(sM.protraitX)} ",
+                   "Current Angle 1D : ${"%.1f".format(sM.portraitX)} ",
                     style = TextStyle(
                         fontFamily = poppins,
                         fontSize = 14.sp,
                     )
                 )
+            }
+
+            Spacer(modifier =  Modifier.padding(top = 12.dp))
+
+            // Max VaL
+            Row{
+                Spacer(modifier =  Modifier.padding(start = 20.dp))
+                Text(
+                    "Max value at x = ${sM.xVal.maxOrNull()}",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+                Spacer(modifier =  Modifier.weight(1f))
+                Text(
+                    "Max value at y = ${sM.yVal.maxOrNull()}",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+                Spacer(modifier =  Modifier.padding(end = 20.dp))
+            }
+
+            Spacer(modifier =  Modifier.padding(top = 12.dp))
+
+            //Min Val
+            Row{
+                Spacer(modifier =  Modifier.padding(start = 20.dp))
+                Text(
+                    "Min value at x = ${sM.xVal.minOrNull()}",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+                Spacer(modifier =  Modifier.weight(1f))
+                Text(
+                    "Min value at y = ${sM.yVal.minOrNull()}",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+                Spacer(modifier =  Modifier.padding(end = 20.dp))
             }
 
             Spacer(modifier =  Modifier.weight(1f))
@@ -246,14 +296,14 @@ class MainActivity : ComponentActivity() {
                     PortraitBubbleView(
                         landscape = sM.landscape,
                         orient = LocalConfiguration.current,
-                        portraitAngle = sM.protraitX
+                        portraitAngle = sM.portraitX
                     )
 
                 }else{
                     PortraitBubbleView(
                         landscape = sM.landscape,
                         orient = LocalConfiguration.current,
-                        portraitAngle = sM.protraitX
+                        portraitAngle = sM.portraitX
                     )
                 }
             }
