@@ -6,6 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,6 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -150,7 +153,12 @@ class MainActivity : ComponentActivity() {
                                         landscape = landscapeF(
                                             circleX.toFloat(),
                                             circleY.toFloat()
-                                        )
+                                        ),
+                                        protraitX = when (sensorConf.orientation){
+                                            Configuration.ORIENTATION_PORTRAIT -> single.toFloat()
+                                            Configuration.ORIENTATION_LANDSCAPE -> (single - 90).toFloat()
+                                            else -> sensorClass.protraitX
+                                        }
                                     )
                                 }
                             }
@@ -212,6 +220,19 @@ class MainActivity : ComponentActivity() {
                     fontWeight = FontWeight.W500
                 )
             )
+
+            Spacer(modifier =  Modifier.padding(top = 15.dp))
+
+            Row{
+                Text(
+                   "Current Angle 1D : ${"%.1f".format(sM.protraitX)} ",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+            }
+
             Spacer(modifier =  Modifier.weight(1f))
 
             if(sM.landscape){
@@ -219,33 +240,35 @@ class MainActivity : ComponentActivity() {
                     landscape = sM.landscape,
                     orient = LocalConfiguration.current
                 )
-            } else {
+            }
+            else {
                 if(sensorConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
                     PortraitBubbleView(
                         landscape = sM.landscape,
-                        orient = LocalConfiguration.current
+                        orient = LocalConfiguration.current,
+                        portraitAngle = sM.protraitX
                     )
 
                 }else{
                     PortraitBubbleView(
                         landscape = sM.landscape,
-                        orient = LocalConfiguration.current
+                        orient = LocalConfiguration.current,
+                        portraitAngle = sM.protraitX
                     )
                 }
             }
-
         }
     }
 
 
     @Composable
-    fun PortraitBubbleView(landscape: Boolean, orient : Configuration){
+    fun PortraitBubbleView(landscape: Boolean, orient : Configuration, portraitAngle : Float){
 
-//        val bubbleMove = if(orient.orientation in listOf(Configuration.ORIENTATION_PORTRAIT, Configuration.ORIENTATION_LANDSCAPE)){
-//
-//        } else {
-//
-//        }
+        val moving = if(orient.orientation in listOf(Configuration.ORIENTATION_PORTRAIT, Configuration.ORIENTATION_LANDSCAPE)){
+            (portraitAngle.coerceIn(-10f, 10f)* 35f)
+        } else {
+            portraitAngle
+        }
 
         Canvas(modifier = Modifier.fillMaxSize()){
 
@@ -269,7 +292,7 @@ class MainActivity : ComponentActivity() {
 
                 drawCircle(
                     radius = 45f,
-                    // center = Offset(size.width * 0.5f, size.height * 0.5f),
+                    center = Offset(x= (size.width / 2) + moving, y = size.height * 0.5f),
                     color = Color(0xFF81C784)
                 )
 
