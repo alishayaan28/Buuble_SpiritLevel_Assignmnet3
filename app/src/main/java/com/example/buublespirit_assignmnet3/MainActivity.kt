@@ -25,7 +25,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
@@ -37,10 +39,13 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.buublespirit_assignmnet3.ui.theme.BuubleSpiritAssignmnet3Theme
 import com.example.buublespirit_assignmnet3.ui.theme.poppins
+import java.util.LinkedList
+import java.util.Queue
 import kotlin.math.atan2
 
 class MainActivity : ComponentActivity() {
@@ -88,8 +93,6 @@ class MainActivity : ComponentActivity() {
 
         val context = LocalContext.current
         val sensorConf = LocalConfiguration.current
-        val filter = FloatArray(3){0f}
-        var time = 0L
 
         var sensorClass by remember { mutableStateOf(SensorModel())}
         val sensorM = remember {
@@ -104,6 +107,13 @@ class MainActivity : ComponentActivity() {
 
         val sensorLst = remember {
             object : SensorEventListener{
+
+                val filter = FloatArray(3){0f}
+                var time = 0L
+                val storeList = LinkedList<Float>()
+                val x = LinkedList<Float>()
+                val y = LinkedList<Float>()
+
                 override fun onSensorChanged(event: SensorEvent?) {
 
                     event?.let {
@@ -116,23 +126,33 @@ class MainActivity : ComponentActivity() {
 
                                 if(cTime - time > 100){
                                     time = cTime
-                                    val circleX = calculateAng(fil[0], fil[1])
-                                    val circleY = calculateAng(fil[0], fil[1])
+                                    val circleX = calculateAng(fil[0], fil[2])
+                                    val circleY = calculateAng(fil[1], fil[2])
+                                    val single = calculateAng(fil[0], fil[1])
 
+                                    // Store 500 value in a link list
+                                    when(sensorConf.orientation){
+                                        Configuration.ORIENTATION_PORTRAIT ->{
+                                            calFiveHV(storeList, "%.1f".format(single).toFloat(), 500)
+                                            calFiveHV(storeList, "%.1f".format(circleX).toFloat(), 500)
+                                            calFiveHV(storeList, "%.1f".format(circleY).toFloat(), 500)
+                                        }
+                                        Configuration.ORIENTATION_LANDSCAPE->{
+                                            calFiveHV(storeList, "%.1f".format(single - 90).toFloat(), 500)
+                                            calFiveHV(storeList, "%.1f".format(circleX).toFloat(), 500)
+                                            calFiveHV(storeList, "%.1f".format(circleY).toFloat(), 500)
+                                        }
+                                        else->{}
+                                    }
 
-
+                                    // Check the Mode for Landscape and portrait
                                     sensorClass = SensorModel(
                                         landscape = landscapeF(
                                             circleX.toFloat(),
                                             circleY.toFloat()
                                         )
                                     )
-
-
                                 }
-
-
-
                             }
                             Sensor.TYPE_MAGNETIC_FIELD -> {
                             }
@@ -179,12 +199,21 @@ class MainActivity : ComponentActivity() {
         sensorConfig: Configuration
     ){
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
+            Spacer(modifier =  Modifier.padding(top = 10.dp))
             Text(
-                if(sM.landscape) "LandScape Mode" else "Portrait Mode"
+                if(sM.landscape) "LandScape Mode" else "Portrait Mode",
+                style = TextStyle(
+                    fontFamily = poppins,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W500
+                )
             )
             Spacer(modifier =  Modifier.weight(1f))
+
             if(sM.landscape){
                 LandscapeBubbleView(
                     landscape = sM.landscape,
@@ -210,16 +239,13 @@ class MainActivity : ComponentActivity() {
 
 
     @Composable
-    fun PortraitBubbleView(
-        landscape: Boolean,
-        orient : Configuration
-    ){
+    fun PortraitBubbleView(landscape: Boolean, orient : Configuration){
 
-        val bubbleMove = if(orient.orientation in listOf(Configuration.ORIENTATION_PORTRAIT, Configuration.ORIENTATION_LANDSCAPE)){
-
-        } else {
-
-        }
+//        val bubbleMove = if(orient.orientation in listOf(Configuration.ORIENTATION_PORTRAIT, Configuration.ORIENTATION_LANDSCAPE)){
+//
+//        } else {
+//
+//        }
 
         Canvas(modifier = Modifier.fillMaxSize()){
 
@@ -273,7 +299,6 @@ class MainActivity : ComponentActivity() {
             }
 
             if(landscape){
-
                 drawCircle(
                     radius = circle,
                     center = Offset(size.width / 2, size.height / 2),
@@ -306,6 +331,13 @@ class MainActivity : ComponentActivity() {
 
     fun landscapeF(x: Float, y: Float): Boolean{
         return x in -10f..10f && y in -10f..10f
+    }
+
+    fun calFiveHV(list: Queue<Float>, num: Float, capacity: Int){
+        if(list.size >= capacity){
+            list.poll()
+        }
+        list.offer(num)
     }
 
 }
