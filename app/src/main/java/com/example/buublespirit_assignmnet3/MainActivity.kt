@@ -1,5 +1,7 @@
 package com.example.buublespirit_assignmnet3
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -285,6 +287,7 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier =  Modifier.weight(1f))
 
+            // Orientation Check for showing Composable Function
             if(sM.landscape){
                 LandscapeBubbleView(
                     landscape = sM.landscape,
@@ -356,6 +359,18 @@ class MainActivity : ComponentActivity() {
         landscape: Boolean,
         orient : Configuration
     ){
+
+        val context = LocalContext.current
+        val activity = context as? Activity
+
+        if (activity != null) {
+            if (orient.orientation == Configuration.ORIENTATION_LANDSCAPE && landscape) {
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } else if (orient.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+            }
+        }
+
         Canvas(modifier = Modifier.fillMaxSize()){
             val circle : Float
             val iCircle : Float
