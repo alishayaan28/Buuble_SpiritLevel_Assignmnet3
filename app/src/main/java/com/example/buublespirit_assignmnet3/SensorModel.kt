@@ -7,7 +7,4 @@ data class SensorModel(
     val yVal: List<Float> = emptyList(),
     val landscapeX: Float = 0f,
     val landscapeY: Float = 0f
-
-
-
 )

@@ -147,10 +147,6 @@ class MainActivity : ComponentActivity() {
                                         else->{}
                                     }
 
-
-
-
-
                                     // Check the Mode for Landscape and portrait and calculate axis for both
                                     sensorClass = SensorModel(
                                         landscape = landscapeF(
@@ -256,7 +252,7 @@ class MainActivity : ComponentActivity() {
 
             // Max VaL
             Row{
-                Spacer(modifier =  Modifier.padding(start = 20.dp))
+                Spacer(modifier =  Modifier.padding(start = 30.dp))
                 Text(
                     "Max value at x = ${sM.xVal.maxOrNull()}",
                     style = TextStyle(
@@ -272,14 +268,14 @@ class MainActivity : ComponentActivity() {
                         fontSize = 14.sp,
                     )
                 )
-                Spacer(modifier =  Modifier.padding(end = 20.dp))
+                Spacer(modifier =  Modifier.padding(end = 30.dp))
             }
 
             Spacer(modifier =  Modifier.padding(top = 12.dp))
 
             //Min Val
             Row{
-                Spacer(modifier =  Modifier.padding(start = 20.dp))
+                Spacer(modifier =  Modifier.padding(start = 30.dp))
                 Text(
                     "Min value at x = ${sM.xVal.minOrNull()}",
                     style = TextStyle(
@@ -295,7 +291,30 @@ class MainActivity : ComponentActivity() {
                         fontSize = 14.sp,
                     )
                 )
-                Spacer(modifier =  Modifier.padding(end = 20.dp))
+                Spacer(modifier =  Modifier.padding(end = 30.dp))
+            }
+
+            Spacer(modifier =  Modifier.padding(top = 12.dp))
+
+            //2D angle
+            Row{
+                Spacer(modifier =  Modifier.padding(start = 30.dp))
+                Text(
+                    "2D at x = ${"%.1f".format(sM.landscapeX)}",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+                Spacer(modifier =  Modifier.weight(1f))
+                Text(
+                    "2D at y = ${"%.1f".format(sM.landscapeY)}",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 14.sp,
+                    )
+                )
+                Spacer(modifier =  Modifier.padding(end = 30.dp))
             }
 
             Spacer(modifier =  Modifier.weight(1f))
@@ -327,7 +346,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 
     @Composable
     fun PortraitBubbleView(landscape: Boolean, orient : Configuration, portraitAngle : Float){
