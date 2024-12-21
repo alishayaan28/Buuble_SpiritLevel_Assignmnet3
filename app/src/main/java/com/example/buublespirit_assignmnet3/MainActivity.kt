@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
@@ -150,7 +151,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-                                    // Check the Mode for Landscape and portrait
+                                    // Check the Mode for Landscape and portrait and calculate axis for both
                                     sensorClass = SensorModel(
                                         landscape = landscapeF(
                                             circleX.toFloat(),
@@ -162,7 +163,19 @@ class MainActivity : ComponentActivity() {
                                             else -> sensorClass.portraitX
                                         },
                                         xVal = x.toList(),
-                                        yVal = y.toList()
+                                        yVal = y.toList(),
+
+                                        landscapeX = when (sensorConf.orientation){
+                                            Configuration.ORIENTATION_PORTRAIT -> circleX.toFloat()
+                                            Configuration.ORIENTATION_LANDSCAPE -> circleY.toFloat()
+                                            else -> sensorClass.landscapeX
+                                        },
+
+                                        landscapeY = when (sensorConf.orientation){
+                                            Configuration.ORIENTATION_PORTRAIT -> circleY.toFloat()
+                                            Configuration.ORIENTATION_LANDSCAPE -> circleX.toFloat()
+                                            else -> sensorClass.landscapeY
+                                        },
                                     )
                                 }
                             }
@@ -218,7 +231,7 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier =  Modifier.padding(top = 10.dp))
             // Mode Check
             Text(
-                if(sM.landscape) "LandScape Mode" else "Portrait Mode",
+                if(sM.landscape) "Flat Mode" else "Uneven Mode",
                 style = TextStyle(
                     fontFamily = poppins,
                     fontSize = 18.sp,
@@ -291,7 +304,9 @@ class MainActivity : ComponentActivity() {
             if(sM.landscape){
                 LandscapeBubbleView(
                     landscape = sM.landscape,
-                    orient = LocalConfiguration.current
+                    orient = LocalConfiguration.current,
+                    landscapeX = sM.landscapeX,
+                    landscapeY = sM.landscapeY
                 )
             }
             else {
@@ -327,7 +342,12 @@ class MainActivity : ComponentActivity() {
 
             if(!landscape){
                 drawRoundRect(
-                    color = Color(0xFFBBDEFB),
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFB2FF59),
+                            Color(0xFF69F0AE)
+                        )
+                    ),
                     topLeft = Offset(
                         (size.width - 800f) / 2,
                         (size.height - 100f) / 2
@@ -339,14 +359,14 @@ class MainActivity : ComponentActivity() {
                 drawCircle(
                     radius = 45f,
                     center = Offset(size.width * 0.5f, size.height * 0.5f),
-                    style = Stroke(width = 4f),
-                    color = Color(0xFFFF5722)
+                    style = Stroke(width = 5f),
+                    color = Color.Black
                 )
 
                 drawCircle(
                     radius = 45f,
                     center = Offset(x= (size.width / 2) + moving, y = size.height * 0.5f),
-                    color = Color(0xFF81C784)
+                    color = Color(0xFFFFEB3B)
                 )
 
             }
@@ -355,10 +375,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun LandscapeBubbleView(
-        landscape: Boolean,
-        orient : Configuration
-    ){
+    fun LandscapeBubbleView(landscape: Boolean, orient : Configuration, landscapeX : Float, landscapeY: Float, ){
 
         val context = LocalContext.current
         val activity = context as? Activity
@@ -372,32 +389,36 @@ class MainActivity : ComponentActivity() {
         }
 
         Canvas(modifier = Modifier.fillMaxSize()){
-            val circle : Float
-            val iCircle : Float
-            val bCircle : Float
-            if(orient.orientation == Configuration.ORIENTATION_PORTRAIT){
-                bCircle = size.width * 0.03f
-                iCircle = size.width * 0.4f
-                circle = iCircle
-            }else{
-                Configuration.ORIENTATION_PORTRAIT
-                bCircle = size.width * 0.3f
-                iCircle = size.width * 0.05f
-                circle = iCircle
-            }
+            val bubble = LandscapeCoordinates(
+                mDegree = 10f,
+                radius = size.width * 0.4f ,
+                bRadius = size.width * 0.03f
+            )
+
+            val calculateValue = bubble.calValue(
+                xAxis = landscapeX,
+                yAxis = landscapeY ,
+                portrait = orient.orientation == Configuration.ORIENTATION_PORTRAIT
+            )
 
             if(landscape){
                 drawCircle(
-                    radius = circle,
+                    radius = size.width * 0.4f,
                     center = Offset(size.width / 2, size.height / 2),
-                    color = Color.Green
+                    color = Color(0xff3F51B5),
+                    style = Stroke(width = 5f),
+                )
+                drawCircle(
+                    color =Color(0xff76FF03),
+                    center = Offset(size.width / 2, size.height / 2),
+                    style = Stroke(width = 5f),
+                    radius = size.width * 0.4f * 0.2f
                 )
 
                 drawCircle(
-                    color = Color.Black,
-                    center = Offset(size.width / 2, size.height / 2),
-                    style = Stroke(width = 3f),
-                    radius = circle * 0.2f
+                    color = Color(0xffFF4081),
+                    center = Offset(size.width / 2 + calculateValue.x, size.height / 2 + (calculateValue.y * -1)),
+                    radius = size.width * 0.05f
                 )
 
             }
