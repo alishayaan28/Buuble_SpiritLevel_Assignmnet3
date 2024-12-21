@@ -445,9 +445,10 @@ class MainActivity : ComponentActivity() {
     }
 
     fun filterValues(inp : FloatArray, out: FloatArray): FloatArray{
+        require(inp.size == out.size){""}
         val alpha = 0.9f
-        for (m in inp.indices){
-            out[m]= alpha * out[m] + ( 1 - alpha) * inp[m]
+        inp.forEachIndexed{ index, value ->
+            out[index] = alpha * out[index] + (1-alpha) * value
         }
         return out
     }
@@ -461,10 +462,12 @@ class MainActivity : ComponentActivity() {
     }
 
     fun calFiveHV(list: Queue<Float>, num: Float, capacity: Int){
-        if(list.size >= capacity){
-            list.poll()
-        }
-        list.offer(num)
+       if(!list.contains(num)){
+           if(list.size >= capacity){
+               list.poll()
+           }
+           list.offer(num)
+       }
     }
 
 }
