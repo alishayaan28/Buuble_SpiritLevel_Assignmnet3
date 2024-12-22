@@ -37,7 +37,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -49,6 +51,8 @@ import com.example.buublespirit_assignmnet3.ui.theme.poppins
 import java.util.LinkedList
 import java.util.Queue
 import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -176,6 +180,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             Sensor.TYPE_MAGNETIC_FIELD -> {
+                                // North Direction
+                                sensorClass = sensorClass.copy(
+                                    north = calNorthAngle(it.values)
+                                )
                             }
                         }
 
@@ -325,7 +333,8 @@ class MainActivity : ComponentActivity() {
                     landscape = sM.landscape,
                     orient = LocalConfiguration.current,
                     landscapeX = sM.landscapeX,
-                    landscapeY = sM.landscapeY
+                    landscapeY = sM.landscapeY,
+                    northAngle = sM.north
                 )
             }
             else {
@@ -393,10 +402,11 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun LandscapeBubbleView(landscape: Boolean, orient : Configuration, landscapeX : Float, landscapeY: Float, ){
+    fun LandscapeBubbleView(landscape: Boolean, orient : Configuration, landscapeX : Float, landscapeY: Float, northAngle: Float ){
 
         val context = LocalContext.current
         val activity = context as? Activity
+
 
         if (activity != null) {
             if (orient.orientation == Configuration.ORIENTATION_LANDSCAPE && landscape) {
@@ -407,6 +417,20 @@ class MainActivity : ComponentActivity() {
         }
 
         Canvas(modifier = Modifier.fillMaxSize()){
+
+            val northLine = 435
+            val cX = size.width / 2
+            val cY = size.height / 2
+            val angleR = Math.toRadians(northAngle.toDouble())
+            val cN = angleR % 360
+            val dX = (cX + northLine * sin(cN).toFloat())
+            val dY = (cY - northLine * cos(cN).toFloat())
+            val nText = android.graphics.Paint().apply {
+                textSize = 50f
+                textAlign = android.graphics.Paint.Align.CENTER
+            }
+
+
             val bubble = LandscapeCoordinates(
                 mDegree = 10f,
                 radius = size.width * 0.4f ,
@@ -418,6 +442,8 @@ class MainActivity : ComponentActivity() {
                 yAxis = landscapeY ,
                 portrait = orient.orientation == Configuration.ORIENTATION_PORTRAIT
             )
+
+
 
             if(landscape){
                 drawCircle(
@@ -438,6 +464,13 @@ class MainActivity : ComponentActivity() {
                     center = Offset(size.width / 2 + calculateValue.x, size.height / 2 + (calculateValue.y * -1)),
                     radius = size.width * 0.05f
                 )
+                drawLine(
+                    color = Color(0xff3F51B5),
+                    start = Offset(size.width / 2, size.height / 2),
+                    end = Offset(dX, dY),
+                    strokeWidth = 5F
+                )
+                drawContext.canvas.nativeCanvas.drawText("N", dX, dY - 20f, nText)
 
             }
 
@@ -454,7 +487,7 @@ class MainActivity : ComponentActivity() {
     }
 
     fun calculateAng(val1: Float, val2: Float):Double{
-        return atan2(val1.toDouble(), val2.toDouble()) / (Math.PI/180)
+        return atan2(val1.toDouble(), val2.toDouble()) *  (180.0 / Math.PI)
     }
 
     fun landscapeF(x: Float, y: Float): Boolean{
@@ -468,6 +501,13 @@ class MainActivity : ComponentActivity() {
            }
            list.offer(num)
        }
+    }
+
+    fun calNorthAngle(mgFVal: FloatArray): Float{
+        val nAngle = atan2(mgFVal[0].toDouble(), mgFVal[1].toDouble())
+        val nDegree = Math.toDegrees(nAngle)
+        return ((360 + nDegree) % 360).toFloat()
+
     }
 
 }
